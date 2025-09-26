@@ -90,9 +90,7 @@ fun AppNavHost() {
             VCardDetailsScreen(navController)
         }
 
-
         composable(Screen.BusinessDetails.route + "/{title}/{id}") { navBackStack ->
-
             val title = navBackStack.arguments?.getString("title").toString()
             val id = navBackStack.arguments?.getString("id").toString()
             BusinessDetails(navController, context, id, title)
@@ -139,18 +137,18 @@ fun AppNavHost() {
 fun HomeBottomViews(
     navController: NavHostController, padding: PaddingValues, mainNavControllers: NavHostController
 ) {
-
-
     val context = LocalContext.current
     var viewmodel = HomeViewModel()
     try {
+
         var act = context as MainActivity
         viewmodel = ViewModelProvider(act).get(HomeViewModel::class.java)
 
     } catch (_: Exception) {
     }
 
-    NavHost(navController = navController,
+    NavHost(
+        navController = navController,
         startDestination = Screen.Home.route,
         modifier = Modifier.padding(padding),
         builder = {
