@@ -22,7 +22,6 @@ public class LocationTrack extends Service implements LocationListener {
 
     private final Context mContext;
 
-
     boolean checkGPS = false;
 
     boolean checkNetwork = false;

@@ -3,10 +3,14 @@ package dev.miyatech.buzzbee.netwoork
 import dev.miyatech.buzzbee.model.BusinessDetailsModel
 import dev.miyatech.buzzbee.model.BusinessListModel
 import dev.miyatech.buzzbee.model.CommonResponse
+import dev.miyatech.buzzbee.model.DashboardModel
 import dev.miyatech.buzzbee.model.DiscoverModel
 import dev.miyatech.buzzbee.model.LoginResponseModel
+import dev.miyatech.buzzbee.model.NotificationDetails
+import dev.miyatech.buzzbee.model.NotificationListModel
 import dev.miyatech.buzzbee.model.StateListModel
 import dev.miyatech.buzzbee.model.SubCategoryModel
+import dev.miyatech.buzzbee.model.VersionModel
 import dev.miyatech.buzzbee.model.VideoResultModel
 import retrofit2.Call
 import retrofit2.http.Field
@@ -30,6 +34,12 @@ interface ApiInterface {
         @Field("mobile") mobile: String, @Field("password") password: String
     ): LoginResponseModel
 
+
+
+
+
+    @GET(Api.appversion)
+    suspend fun appVersion(): VersionModel
 
     @GET(Api.statelist)
     suspend fun stateList(): StateListModel
@@ -64,6 +74,14 @@ interface ApiInterface {
     @GET(Api.categorylist)
     suspend fun getDiscover(): DiscoverModel
 
+    @GET(Api.dashboard)
+    suspend fun getDashboard(@Query("userid")  id: String ): DashboardModel
+    @GET(Api.notifications)
+    suspend fun getNotificationList(@Query("userid")  id: String ): NotificationListModel
+
+    @GET(Api.notificationview)
+    suspend fun getNotificationDetails(@Query("id")  id: String ): NotificationDetails
+
     @GET(Api.subcategory)
     suspend fun getCategory(@Query("categoryid") id: String): SubCategoryModel
 
@@ -78,6 +96,12 @@ interface ApiInterface {
     suspend fun businessDetails(
         @Field("id") id: String,
     ): BusinessDetailsModel
+
+
+    @GET(Api.mybookings)
+    suspend fun mybookings(
+        @Query("userid") id: String,
+    ): CommonResponse
 
 }
 

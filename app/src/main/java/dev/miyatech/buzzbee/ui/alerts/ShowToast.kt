@@ -24,6 +24,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
@@ -94,12 +95,14 @@ fun ShowToast(
                     Text(
                         subTitle,
                         color = Color.Black,
+                        textAlign = TextAlign.Center,
                         modifier = Modifier.padding(all = 18.dp),
                         fontSize = 15.sp
                     )
                     Button(
                         onClick = onDismiss,
                         modifier = Modifier.width(110.dp),
+
                         colors = ButtonDefaults.buttonColors(containerColor = appThemePrimary80)
 
                     ) {

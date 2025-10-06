@@ -17,6 +17,7 @@ import dev.miyatech.buzzbee.home.ExploerScreen
 import dev.miyatech.buzzbee.home.HomeMainScreen
 import dev.miyatech.buzzbee.home.HomeScreen
 import dev.miyatech.buzzbee.home.LocationPermission
+import dev.miyatech.buzzbee.home.NotificationDetailsView
 import dev.miyatech.buzzbee.home.NotificationScreen
 import dev.miyatech.buzzbee.home.OfferScreen
 import dev.miyatech.buzzbee.home.PreviewScreen
@@ -31,6 +32,7 @@ import dev.miyatech.buzzbee.home.manage_business.VCardDetailsScreen
 import dev.miyatech.buzzbee.login.LoginScreen
 import dev.miyatech.buzzbee.login.RegisterScreen
 import dev.miyatech.buzzbee.login.SplashScree
+import dev.miyatech.buzzbee.login.Temp
 import dev.miyatech.buzzbee.ui.ZoomImage
 import dev.miyatech.buzzbee.viewmodel.HomeViewModel
 import dev.miyatech.buzzbee.viewmodel.ManageByBusinessViewModel
@@ -68,8 +70,15 @@ fun AppNavHost() {
         composable(Screen.Profile.route) { //  Define the Profile screen
             ProfileScreen(navController)
         }
+
         composable(Screen.Notification.route) { //  Define the Profile screen
-            NotificationScreen(navController)
+            NotificationScreen(navController, context)
+
+        }
+        composable(Screen.NotificationsDetails.route + "/{id}") { navBackStack ->//  Define the Profile screen
+            var id = navBackStack.arguments?.getString("id").toString()
+            NotificationDetailsView(navController, context, id)
+
         }
 
         composable(Screen.Location1.route) { //  Define the Settings screen
@@ -90,12 +99,17 @@ fun AppNavHost() {
             VCardDetailsScreen(navController)
         }
 
+        composable(Screen.Temp.route) { //  Define the Settings screen
+            Temp(navController)
+        }
+
+
         composable(Screen.BusinessDetails.route + "/{title}/{id}") { navBackStack ->
+
             val title = navBackStack.arguments?.getString("title").toString()
             val id = navBackStack.arguments?.getString("id").toString()
             BusinessDetails(navController, context, id, title)
         }
-
 
         composable(Screen.Terms.route + "/{title}/{url}") { navBackStack ->
 
@@ -137,18 +151,18 @@ fun AppNavHost() {
 fun HomeBottomViews(
     navController: NavHostController, padding: PaddingValues, mainNavControllers: NavHostController
 ) {
+
+
     val context = LocalContext.current
     var viewmodel = HomeViewModel()
     try {
-
         var act = context as MainActivity
         viewmodel = ViewModelProvider(act).get(HomeViewModel::class.java)
 
     } catch (_: Exception) {
     }
 
-    NavHost(
-        navController = navController,
+    NavHost(navController = navController,
         startDestination = Screen.Home.route,
         modifier = Modifier.padding(padding),
         builder = {

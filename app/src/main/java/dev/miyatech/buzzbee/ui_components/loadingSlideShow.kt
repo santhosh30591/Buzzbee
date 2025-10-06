@@ -32,14 +32,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import dev.miyatech.buzzbee.R
-import dev.miyatech.buzzbee.model.DiscoverResult
+import dev.miyatech.buzzbee.model.DashboardSlides
 import dev.miyatech.buzzbee.ui.theme.appThemeAccident50
 import dev.miyatech.buzzbee.ui.theme.appThemePrimary
 import kotlinx.coroutines.coroutineScope
@@ -48,9 +47,10 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun loadingSlideShow(sliderList: ArrayList<DiscoverResult>) {
+fun loadingSlideShow(sliderList: ArrayList<DashboardSlides>) {
 
     var pageKey by remember { mutableStateOf(0) }
+    var nextPage by remember { mutableStateOf(0) }
 
     val pagerState = rememberPagerState(sliderList.size)
 
@@ -61,22 +61,27 @@ fun loadingSlideShow(sliderList: ArrayList<DiscoverResult>) {
     val itemsScrollCount = 150
 
 
+
     LaunchedEffect(pageKey) {
 
 
         while (true) {
 
-            val nextPage = (pagerState.currentPage + 1) % sliderList.size
-
             coroutineScope {
                 delay(2000)
-                if (0 <= pagerState.currentPage || pagerState.currentPage < sliderList.size) {
+                try {
                     pagerState.animateScrollToPage(nextPage)
-                    pageKey++
-                } else {
-                    pageKey++
+
+                    if (sliderList.size - 1 == nextPage) {
+                        nextPage = 0
+                    } else {
+                        nextPage = nextPage + 1
+                    }
+                } catch (e: Exception) {
                 }
             }
+
+
         }
     }
 
@@ -94,15 +99,22 @@ fun loadingSlideShow(sliderList: ArrayList<DiscoverResult>) {
 //            pageSpacing = 10.dp
         ) { currentPage ->
 
-
+            Column() {
             Box(
                 modifier = Modifier
                     .fillMaxSize(), Alignment.BottomCenter
             ) {
 
                 AsyncImage(
-                    model = sliderList[currentPage].imageUrl, // Replace with your image URL
-//                        model = "https://cdn.pixabay.com/photo/2015/04/23/22/00/tree-736885__340.jpg", // Replace with your image URL
+                    model = try {
+                        if (!sliderList[currentPage].imageUrl.contains("http://")) {
+                            sliderList[currentPage].imageUrl
+                        } else "https://cdn.pixabay.com/photo/2015/04/23/22/00/tree-736885__340.jpg" // Replace with your image URL
+
+                    } catch (e: Exception) {
+                        "https://cdn.pixabay.com/photo/2015/04/23/22/00/tree-736885__340.jpg"
+                    },
+
                     contentDescription = "",
                     // Optional: Add placeholder and error drawables
                     placeholder = painterResource(id = R.drawable.placeholder_image),
@@ -126,6 +138,9 @@ fun loadingSlideShow(sliderList: ArrayList<DiscoverResult>) {
                         modifier = Modifier
                     )
                 }
+
+            }
+
             }
         }
     }
@@ -164,29 +179,11 @@ fun IndicatorDots(isSelected: Boolean, modifier: Modifier) {
 @Composable
 fun GreetingPreviews() {
 
-    val context = LocalContext.current
-    var discoverList by remember { mutableStateOf(ArrayList<DiscoverResult>()) }
-
-    discoverList.add(
-        DiscoverResult(
-            "1", "sample", "https://cdn.pixabay.com/photo/2015/04/23/22/00/tree-736885__340.jpg"
-        )
-    )
-    discoverList.add(
-        DiscoverResult(
-            "1", "sample", "https://cdn.pixabay.com/photo/2015/04/23/22/00/tree-736885__340.jpg"
-        )
-    )
-    discoverList.add(
-        DiscoverResult(
-            "1", "sample", "https://cdn.pixabay.com/photo/2015/04/23/22/00/tree-736885__340.jpg"
-        )
-    )
-    ImageSlider(discoverList)
+    ImageSlider(arrayListOf())
 }
 
 @Composable
-fun ImageSlider(images: ArrayList<DiscoverResult>) {
+fun ImageSlider(images: ArrayList<DashboardSlides>) {
     var currentImageIndex by remember { mutableStateOf(0) }
     var isAnimating by remember { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
@@ -223,8 +220,16 @@ fun ImageSlider(images: ArrayList<DiscoverResult>) {
 //                        elevation = 4.dp
                 ) {
                     AsyncImage(
-                        model = images[index].imageUrl, // Replace with your image URL
-//                        model = "https://cdn.pixabay.com/photo/2015/04/23/22/00/tree-736885__340.jpg", // Replace with your image URL
+//                        model = images[index].imageUrl, // Replace with your image URL
+                        model = try {
+                            if (!images[index].imageUrl.contains("http://")) {
+                                images[index].imageUrl
+                            } else "https://cdn.pixabay.com/photo/2015/04/23/22/00/tree-736885__340.jpg" // Replace with your image URL
+
+                        } catch (e: Exception) {
+                            "https://cdn.pixabay.com/photo/2015/04/23/22/00/tree-736885__340.jpg"
+
+                        },
                         contentDescription = "",
                         // Optional: Add placeholder and error drawables
                         placeholder = painterResource(id = R.drawable.placeholder_image),
@@ -234,6 +239,7 @@ fun ImageSlider(images: ArrayList<DiscoverResult>) {
                         // Optional: Customize contentScale, transformations, etc.
 
                     )
+
 
                 }
             }

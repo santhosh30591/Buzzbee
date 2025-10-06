@@ -25,6 +25,9 @@ object RetrofitClient {
     const val Server = "https://billpaynxt.in/"
     const val MainServer = Server + "portal/billapi/"
 
+
+    const val localkart="https://www.localkart.app/portal/api/"
+
     const val BaseUrl = "https://miyahosting.co.in/"
     const val HttpServer = BaseUrl + "buzzbee/portal/api/"
 
@@ -70,12 +73,12 @@ object RetrofitClient {
         okhttpClient?.addInterceptor(logging)
 
         Retrofit.Builder()
-            .baseUrl(MainServer)
+            .baseUrl(localkart)
             .client(okhttpClient?.build())
             .addConverterFactory(GsonConverterFactory.create())
     }
 
-    val apiInterface: ApiInterface by lazy {
+    val apiInterface_LocalKart: ApiInterface by lazy {
         retrofitClient
             .build()
             .create(ApiInterface::class.java)

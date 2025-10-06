@@ -19,6 +19,7 @@ sealed class Screen(val route: String) {
     object Home : Screen("Home")
     object Profile : Screen("Profile")
     object Notification : Screen("Notifications")
+    object NotificationsDetails : Screen("NotificationsDetails")
     object ManageBusiness : Screen("ManageBusiness")
     object CreatePost : Screen("Create Post")
     object Support : Screen("Support")
@@ -38,6 +39,7 @@ sealed class Screen(val route: String) {
     object VCard : Screen("MyBusiness")
     object ZoomingImg : Screen("ZoomingImage")
     object PreviewScreen : Screen("PreviewScreen")
+    object Temp : Screen("temps")
 }
 
 

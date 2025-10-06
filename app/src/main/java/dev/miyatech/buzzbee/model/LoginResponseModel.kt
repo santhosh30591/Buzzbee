@@ -24,3 +24,20 @@ open class LoginResult(
 
 open class LoginResponseModel(var results: LoginResult = LoginResult()) :
     CommonResponse()
+
+
+open class VersionModel(var results: AppResults = AppResults()) :
+    CommonResponse()
+
+
+data class AppResults(
+
+    @SerializedName("id") var id: Int? = null,
+    @SerializedName("createAt") var createAt: String? = null,
+    @SerializedName("versionName") var versionName: String? = null,
+    @SerializedName("versionCode") var versionCode: String? = null,
+    @SerializedName("description") var description: String? = null,
+    @SerializedName("link") var link: String? = null,
+    @SerializedName("message") var message: String? = null
+
+)
