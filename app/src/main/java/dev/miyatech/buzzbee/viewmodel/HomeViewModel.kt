@@ -8,7 +8,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dev.miyatech.buzzbee.model.BusinessDetailsModel
 import dev.miyatech.buzzbee.model.BusinessListModel
+import dev.miyatech.buzzbee.model.DashboardModel
 import dev.miyatech.buzzbee.model.DiscoverResult
+import dev.miyatech.buzzbee.model.NotificationDetails
+import dev.miyatech.buzzbee.model.NotificationListModel
 import dev.miyatech.buzzbee.model.SubCategoryModel
 import dev.miyatech.buzzbee.model.VideoListModel
 import dev.miyatech.buzzbee.model.VideoResultModel
@@ -23,9 +26,13 @@ import kotlinx.coroutines.launch
 class HomeViewModel() : ViewModel() {
 
     val _discount: MutableLiveData<NetworkResult<ArrayList<DiscoverResult>>> = MutableLiveData()
+    val dashboard: LiveData<NetworkResult<DashboardModel>> = MutableLiveData()
+    val notificationList: LiveData<NetworkResult<NotificationListModel>> = MutableLiveData()
+    val notificationDetails: LiveData<NetworkResult<NotificationDetails>> = MutableLiveData()
     val discountState: LiveData<NetworkResult<ArrayList<DiscoverResult>>> = _discount
     var discountStateAll: ArrayList<DiscoverResult> = arrayListOf()
 
+    val notificationCount: MutableLiveData<String> = MutableLiveData("0")
 
     val _video: MutableLiveData<NetworkResult<VideoResultModel>> = MutableLiveData()
     val video: MutableLiveData<NetworkResult<VideoResultModel>> = _video
@@ -36,19 +43,65 @@ class HomeViewModel() : ViewModel() {
     val _latelong: MutableLiveData<Location> = MutableLiveData()
     val latelong: LiveData<Location> = _latelong
 
-    fun home(context: Context) {
+
+    fun home(context: Context, id: String) {
+        dashboard as MutableLiveData<NetworkResult<DashboardModel>>
         viewModelScope.launch {
-            _discount.value = NetworkResult.Loading
+            if (notificationCount.value!!.length == 0) {
+                dashboard.value = NetworkResult.Loading
+            }
+
             if (isInternetAvailable(context)) {
                 try {
-                    val response = apiHelper.discover()
-                    _discount.value = NetworkResult.Success(data = response.results)
-                    discountStateAll = response.results
+                    val response = apiHelper.dashboard(id)
+                    notificationCount.value = response.results.notification_count
+                    dashboard.value = NetworkResult.Success(data = response)
+
                 } catch (e: Exception) {
-                    _discount.value = NetworkResult.Error(Api.NetConnectionFailed)
+                    dashboard.value = NetworkResult.Error(Api.NetConnectionFailed)
                 }
             } else {
-                _discount.value = NetworkResult.Error(Api.notInterNetConnection)
+                dashboard.value = NetworkResult.Error(Api.notInterNetConnection)
+            }
+        }
+    }
+
+    fun getNotificatiopnList(context: Context, userid: String) {
+        notificationList as MutableLiveData<NetworkResult<NotificationListModel>>
+        viewModelScope.launch {
+
+            notificationList.value = NetworkResult.Loading
+
+            if (isInternetAvailable(context)) {
+                try {
+                    val response = apiHelper.notificationList(userid)
+                    notificationList.value = NetworkResult.Success(data = response)
+
+                } catch (e: Exception) {
+                    notificationList.value = NetworkResult.Error(Api.NetConnectionFailed)
+                }
+            } else {
+                notificationList.value = NetworkResult.Error(Api.notInterNetConnection)
+            }
+        }
+    }
+
+    fun getNotificatiopnDetails(context: Context, id: String) {
+        notificationDetails as MutableLiveData<NetworkResult<NotificationDetails>>
+        viewModelScope.launch {
+
+            notificationDetails.value = NetworkResult.Loading
+
+            if (isInternetAvailable(context)) {
+                try {
+                    val response = apiHelper.notificationDetails(id)
+                    notificationDetails.value = NetworkResult.Success(data = response)
+
+                } catch (e: Exception) {
+                    notificationDetails.value = NetworkResult.Error(Api.NetConnectionFailed)
+                }
+            } else {
+                notificationDetails.value = NetworkResult.Error(Api.notInterNetConnection)
             }
         }
     }
@@ -149,6 +202,7 @@ class HomeViewModel() : ViewModel() {
             }
         }
     }
+
 
 }
 

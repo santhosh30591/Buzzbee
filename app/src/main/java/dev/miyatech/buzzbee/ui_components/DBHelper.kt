@@ -5,6 +5,8 @@ import android.content.Context
 import com.google.gson.Gson
 import dev.miyatech.buzzbee.model.LoginResponseModel
 import dev.miyatech.buzzbee.model.LoginResult
+import java.text.SimpleDateFormat
+import java.util.Locale
 
 
 class DBHelper(act: Activity) {
@@ -63,4 +65,27 @@ class DBHelper(act: Activity) {
         return result;
     }
 }
+
+fun dateFormateYMD_HMA(s: String): String {
+    try {
+
+
+        val inputFormat = SimpleDateFormat("yyyy-mm-dd HH:mm:ss", Locale.ENGLISH)
+
+        // Define the output format (12-hour with AM/PM)
+        val outputFormat = SimpleDateFormat("dd-MM-yy hh:mm a", Locale.ENGLISH)
+
+        // Parse the input string into a Date object
+        val date = inputFormat.parse(s)
+
+        // Format the Date object into the desired 12-hour string
+        return outputFormat.format(date)
+
+    } catch (e: Exception) {
+        println("date err $s")
+        return s
+    }
+}
+
+val downloadAppLink="https://miyahosting.co.in/buzzbee/portal/api/notificationview?id=267"
 

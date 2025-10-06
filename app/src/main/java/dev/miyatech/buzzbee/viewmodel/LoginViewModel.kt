@@ -13,6 +13,7 @@ import dev.miyatech.buzzbee.model.CommonResponse
 import dev.miyatech.buzzbee.model.LoginResponseModel
 import dev.miyatech.buzzbee.model.StateList
 import dev.miyatech.buzzbee.model.StateListModel
+import dev.miyatech.buzzbee.model.VersionModel
 import dev.miyatech.buzzbee.netwoork.Api
 import dev.miyatech.buzzbee.netwoork.ApiHelper
 import dev.miyatech.buzzbee.netwoork.NetworkResult
@@ -26,7 +27,6 @@ class ViewModelLogin : ViewModel() {
 
     var isMobileError = false
     var isPasswordError = false
-
 
     fun checkingMobile(mobile: String) {
 
@@ -66,10 +66,34 @@ class ViewModelLogin : ViewModel() {
 
     private val _login: MutableLiveData<NetworkResult<LoginResponseModel>> = MutableLiveData()
     val login: MutableLiveData<NetworkResult<LoginResponseModel>> = _login
-
+    val appVersion: LiveData<NetworkResult<VersionModel>> = MutableLiveData()
 
     private val apiHelper = ApiHelper(RetrofitClient.api_interface)
 
+
+    fun appVersions(context: Context) {
+        appVersion as MutableLiveData
+        if (isInternetAvailable(context)) {
+            viewModelScope.launch {
+                appVersion.value = NetworkResult.Loading
+                try {
+                    val response = apiHelper.appVersion()
+                    if (response.errorCode == 0) {
+                        appVersion.value = NetworkResult.Success(data = response)
+                    } else {
+                        appVersion.value = NetworkResult.Error(
+                            response.message
+                        )
+                    }
+
+                } catch (e: Exception) {
+                    appVersion.value = NetworkResult.Error(Api.NetConnectionFailed)
+                }
+            }
+        } else {
+            appVersion.value = NetworkResult.Error(Api.notInterNetConnection)
+        }
+    }
 
     fun submit(
         mobile: String, password: String, context: Context, navController: NavHostController

@@ -9,10 +9,6 @@ import dev.miyatech.buzzbee.model.StateList
 
 class ManageByBusinessViewModel() : ViewModel() {
 
-
-
-
-
     val _postList: MutableLiveData<ArrayList<PostModel>> = MutableLiveData(arrayListOf())
     val createPostDate: MutableLiveData<String> = MutableLiveData("12-12-2024 to 10-09-2025")
     val fromDate: MutableLiveData<String> = MutableLiveData("From Date")

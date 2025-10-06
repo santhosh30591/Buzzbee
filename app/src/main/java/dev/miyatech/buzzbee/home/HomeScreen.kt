@@ -31,6 +31,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -59,11 +60,11 @@ import coil.compose.AsyncImage
 import dev.miyatech.buzzbee.MainActivity
 import dev.miyatech.buzzbee.R
 import dev.miyatech.buzzbee.Screen
-import dev.miyatech.buzzbee.model.DiscoverResult
+import dev.miyatech.buzzbee.model.DashboardSlides
 import dev.miyatech.buzzbee.navDrawerSideMenu
+import dev.miyatech.buzzbee.netwoork.NetworkResult
 import dev.miyatech.buzzbee.ui.alerts.ShowLoading
 import dev.miyatech.buzzbee.ui.alerts.ShowToast
-import dev.miyatech.buzzbee.ui.theme.appThemeAccident50
 import dev.miyatech.buzzbee.ui.theme.appThemeCardTint
 import dev.miyatech.buzzbee.ui.theme.appThemePrimary
 import dev.miyatech.buzzbee.ui_components.BottomTabLineView
@@ -93,14 +94,71 @@ fun HomeScreen(
     val context = LocalContext.current
 
     var showSuccessAlerts by remember { mutableStateOf(false) }
-    var name by remember { mutableStateOf("") }
 
-    try {
-        name = DBHelper(context as MainActivity).loginGetDetails().name.toString()
-    } catch (e: Exception) {
+    var notificationCount by remember { mutableStateOf("") }
+
+    var discoverList by remember { mutableStateOf(ArrayList<DashboardSlides>()) }
+
+
+    var isLoading by remember { mutableStateOf(false) }
+    var showToast by remember { mutableStateOf(false) }
+    var errorMsg by remember { mutableStateOf(" ") }
+    var ads_banner by remember { mutableStateOf("") }
+
+    LaunchedEffect(key1 = null) {
+        context as MainActivity
+
+        viewModel.home(context, DBHelper(context).loginGetDetails().id.toString())
+
+        viewModel.notificationCount.observe(context, {
+
+            notificationCount = it
+
+        })
+
+        try {
+            viewModel.dashboard.observe(context) { response ->
+
+                when (response) {
+                    is NetworkResult.Loading -> {
+                        if (discoverList.size == 0) {
+                            isLoading = true
+                        }
+                    }
+
+                    is NetworkResult.Success -> {
+                        isLoading = false
+
+                        ads_banner =
+                            response.data.results.ads_banner
+
+                        if (response.data.results.slides.size != 0) {
+                            discoverList.clear()
+                            discoverList.addAll(response.data.results.slides)
+
+
+                        }
+                    }
+
+                    is NetworkResult.Error -> {
+                        showToast = true
+                        isLoading = false
+                        errorMsg = response.message
+                    }
+
+                    else -> {
+                        isLoading = false
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            println(" loading error ")
+            errorMsg = " " + e
+        }
+
+
 
     }
-
 
     ModalNavigationDrawer(drawerState = drawerState, drawerContent = {
         ModalDrawerSheet(
@@ -208,7 +266,13 @@ fun HomeScreen(
     }) {
         Scaffold(topBar = {
             if (title.equals("Home")) {
-                CenterAlignedToolbar(drawerState, coroutineScope)
+                CenterAlignedToolbar(
+                    navController,
+                    notificationCount,
+                    drawerState,
+                    coroutineScope,
+                    mainNavControllers
+                )
             } else {
                 HomeTitleBar(text = title)
             }
@@ -217,9 +281,21 @@ fun HomeScreen(
 
 
             Box(Modifier.padding(it)) {
-                Home1(title, pos, viewModel)
+                Home1(title, pos, context, discoverList, ads_banner)
+
             }
         }
+
+        ShowLoading(isLoading = isLoading) {
+
+        }
+        ShowToast(onDismiss = {
+            showToast = false
+        }, title = "", subTitle = errorMsg, outSide = {
+
+        }, showToast = showToast, onDismissCloseIcons = {
+            showToast = false
+        })
     }
 
 
@@ -230,91 +306,22 @@ fun HomeScreen(
 @Composable
 fun Home1(
 
-    title: String, pos: Int, viewModel: HomeViewModel
+    title: String,
+    pos: Int,
+    context: Context,
+    sliderList: ArrayList<DashboardSlides>,
+    ads_banner: String,
 ) {
-    val context = LocalContext.current
-//    var discoverList by remember { mutableStateOf(viewModel.discountStateAll) }
-    var discoverList by remember { mutableStateOf(ArrayList<DiscoverResult>()) }
-    discoverList.add(
-        DiscoverResult(
-            "1", "sample", "https://cdn.pixabay.com/photo/2015/04/23/22/00/tree-736885__340.jpg"
-        )
-    )
-    discoverList.add(
-        DiscoverResult(
-            "1", "sample", "https://cdn.pixabay.com/photo/2015/04/23/22/00/tree-736885__340.jpg"
-        )
-    )
-    discoverList.add(
-        DiscoverResult(
-            "1", "sample", "https://cdn.pixabay.com/photo/2015/04/23/22/00/tree-736885__340.jpg"
-        )
-    )
 
-//    discoverList.add(
-//        DiscoverResult(
-//            "1", "sample", "https://cdn.pixabay.com/photo/2015/04/23/22/00/tree-736885__340.jpg"
-//        )
-//    )
-
-//    discoverList.add(
-//        DiscoverResult(
-//            "1", "sample", "https://cdn.pixabay.com/photo/2015/04/23/22/00/tree-736885__340.jpg"
-//        )
-//    )
-
-//    discoverList.add(
-//        DiscoverResult(
-//            "1", "sample", "https://cdn.pixabay.com/photo/2015/04/23/22/00/tree-736885__340.jpg"
-//        )
-//    )
-
-    var isLoading by remember { mutableStateOf(false) }
-    var showToast by remember { mutableStateOf(false) }
-    var errorMsg by remember { mutableStateOf("") }
 
 
 //
 
 
-//    LaunchedEffect(key1 = null) {
-////        viewModel.home(context)
-//        try {
-//            context as MainActivity
-//            viewModel.discountState.observe(context) { response ->
-//
-//                when (response) {
-//                    is NetworkResult.Loading -> {
-//                        isLoading = true
-//                    }
-//
-//                    is NetworkResult.Success -> {
-//                        isLoading = false
-//
-//                        if (response.data.size != 0) {
-////                            discoverList = response.data
-//                        }
-//                    }
-//
-//                    is NetworkResult.Error -> {
-//                        showToast = true
-//                        isLoading = false
-//                        errorMsg = response.message
-//                    }
-//
-//                    else -> {
-//                        isLoading = false
-//                    }
-//                }
-//            }
-//        } catch (_: Exception) {
-//
-//        }
-//
-//    }
-//
+
 //
     var late by remember { mutableStateOf(0.0) }
+
 //
 //    val locationManager = context?.getSystemService(Context.LOCATION_SERVICE) as? LocationManager
 //    val loca = locationManager?.isProviderEnabled(LocationManager.GPS_PROVIDER) ?: false
@@ -374,7 +381,6 @@ fun Home1(
             modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.Bottom
         ) {
 
-
             Box(
                 modifier = Modifier
                     .weight(1f)
@@ -428,8 +434,8 @@ fun Home1(
                         ) {
 
 
-                            if (discoverList.size != 0) {
-                                loadingSlideShow(discoverList)
+                            if (sliderList.size != 0) {
+                                loadingSlideShow(sliderList)
                                 Spacer(modifier = Modifier.height(5.dp))
                                 Box(
                                     Modifier
@@ -439,49 +445,56 @@ fun Home1(
 //                            .background(appThemeAccident50)
                                     Alignment.TopStart,
                                 ) {
-                                    Text(text = "  Category", fontSize = 15.sp)
+                                    Text(text = "  Category ", fontSize = 15.sp)
+                                }
+                                loadingHome1(sliderList, context, rememberNavController())
+
+//                                Box(
+//                                    Modifier
+//                                        .fillMaxWidth()
+//                                        .padding(8.dp)
+//
+//                                        .background(appThemeAccident50)
+//                                        .padding(25.dp),
+//                                    Alignment.Center,
+//                                ) {
+
+                                if (ads_banner.length != 0) {
+                                    AsyncImage(
+//                        model = images[index].imageUrl, // Replace with your image URL
+                                        model = ads_banner,
+                                        contentDescription = "",
+                                        // Optional: Add placeholder and error drawables
+                                        placeholder = painterResource(id = R.drawable.placeholder_image),
+                                        error = painterResource(id = R.drawable.error_image),
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                            .padding(15.dp)
+                                            .clip(RoundedCornerShape(10.dp)),
+                                        contentScale = ContentScale.Crop
+                                        // Optional: Customize contentScale, transformations, etc.
+
+                                    )
                                 }
 
-
-                                loadingHome1(discoverList, context, rememberNavController())
-
-                                Box(
-                                    Modifier
-                                        .fillMaxWidth()
-                                        .padding(8.dp)
-                                        .clip(RoundedCornerShape(10.dp))
-                                        .background(appThemeAccident50)
-                                        .padding(25.dp),
-                                    Alignment.Center,
-                                ) {
-                                    Text(text = " Banner ")
-                                }
-
-                                ImageSlider(images = discoverList)
+                                ImageSlider(images = sliderList)
 
 
                             } else {
-                                Box(
-                                    Modifier
-                                        .fillMaxWidth()
-                                        .padding(8.dp)
-                                        .clip(RoundedCornerShape(10.dp))
-                                        .background(appThemeAccident50)
-                                        .padding(40.dp),
-                                    Alignment.Center,
-                                ) {
-                                    Text(text = title + " Location " + late)
-                                }
-
-                            }
-
-
-                            ShowLoading(isLoading = isLoading) {
+//                                Box(
+//                                    Modifier
+//                                        .fillMaxWidth()
+//                                        .padding(8.dp)
+//                                        .clip(RoundedCornerShape(10.dp))
+//                                        .background(appThemeAccident50)
+//                                        .padding(40.dp),
+//                                    Alignment.Center,
+//                                ) {
+//                                    Text(text = title + " Location " + late)
+//                                }
 
                             }
                         }
-
-
                     }
 
                 }
@@ -496,11 +509,12 @@ fun Home1(
         }
     }
 
+
 }
 
 @Composable
 fun loadingHome1(
-    discoverList: ArrayList<DiscoverResult>, context: Context, navController: NavController
+    discoverList: ArrayList<DashboardSlides>, context: Context, navController: NavController
 ) {
     val configuration = LocalConfiguration.current
     val screenWidth = configuration.screenWidthDp.dp
@@ -528,15 +542,8 @@ fun loadingHome1(
 
                     .clickable {
 
-                        var category = discoverList[position].category
-                        var id = discoverList[position].id
-
-//                        navController.navigate(Screen.SubCategory.route + "/$category/$id")
 
                     }) {
-
-                //Profile image
-
 
                 Column(
 
@@ -584,7 +591,7 @@ fun loadingHome1(
                     }
 
                     Text(
-                        text = discoverList[position].category,
+                        text = discoverList[position].name,
                         style = TextStyle(
                             fontSize = 11.sp,
                             textAlign = TextAlign.Center,
@@ -601,6 +608,7 @@ fun loadingHome1(
         }
     }
 }
+
 
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
