@@ -47,7 +47,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImage
@@ -58,7 +58,6 @@ import dev.miyatech.buzzbee.model.NotificationResult
 import dev.miyatech.buzzbee.netwoork.NetworkResult
 import dev.miyatech.buzzbee.ui.alerts.ShowToast
 import dev.miyatech.buzzbee.ui.alerts.shimmerLoadingAnimation
-import dev.miyatech.buzzbee.ui.theme.appThemePrimary
 import dev.miyatech.buzzbee.ui.theme.appThemePrimary80
 import dev.miyatech.buzzbee.ui_components.DBHelper
 import dev.miyatech.buzzbee.ui_components.HomeTitleBarBack
@@ -67,35 +66,28 @@ import dev.miyatech.buzzbee.ui_components.dateFormateYMD_HMA
 import dev.miyatech.buzzbee.viewmodel.HomeViewModel
 
 @Composable
-fun NotificationScreen(navController: NavController, context: Context) {
+fun NotificationScreen(
+    navController: NavController,
+    context: Context,
+    viewmodel: HomeViewModel = viewModel()
+) {
     var isLoading by remember { mutableStateOf(false) }
     var notificationList by remember { mutableStateOf(arrayListOf<NotificationResult>()) }
 
     var showToast by remember { mutableStateOf(false) }
     var errorMsg by remember { mutableStateOf(" ") }
 
-    var viewmodel = HomeViewModel()
-    var shouldFetch by remember { mutableStateOf(true) }
 
-
-    LaunchedEffect(shouldFetch) {
+    LaunchedEffect(notificationList) {
         context as MainActivity
-
-        if (shouldFetch) {
-
-            viewmodel = ViewModelProvider(context as MainActivity).get(HomeViewModel::class.java)
-        }
-
-        viewmodel.getNotificatiopnList(context, DBHelper(context).loginGetDetails().id.toString())
-
+        viewmodel.getNotificatiopnList1(context, DBHelper(context).loginGetDetails().id.toString())
         try {
             viewmodel.notificationList.observe(context) { response ->
-
                 when (response) {
                     is NetworkResult.Loading -> {
                         if (notificationList.size == 0) {
                             isLoading = true
-                            shouldFetch = false
+
                         }
 
                     }
@@ -126,7 +118,6 @@ fun NotificationScreen(navController: NavController, context: Context) {
 
     }
 
-
     Column(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Bottom,
@@ -135,11 +126,9 @@ fun NotificationScreen(navController: NavController, context: Context) {
             modifier = Modifier.weight(1f)
         ) {
 
-            HomeTitleBarBack(text = "Notifications", navController)
-
+            HomeTitleBarBack(text = "Notifications " + errorMsg, navController)
 
             if (!isLoading) {
-
 
                 if (notificationList.size == 0) {
 
@@ -147,7 +136,6 @@ fun NotificationScreen(navController: NavController, context: Context) {
                     modifier = Modifier.fillMaxSize(), // Make the Box fill the available space
                     contentAlignment = Alignment.Center // Center its content both horizontally and vertically
                 ) {
-
 
                     Card() {
                         Column(
@@ -161,7 +149,12 @@ fun NotificationScreen(navController: NavController, context: Context) {
                             Image(
                                 painterResource(id = R.drawable.error_image),
                                 contentDescription = "",
-                                modifier = Modifier.clickable { expended = !expended }
+                                modifier = Modifier.clickable {
+                                    expended = !expended
+
+                                    viewmodel.getNotificatiopnList1(context, "5")
+
+                                }
                             )
                             AnimatedVisibility(visible = expended) {
                                 Text(
@@ -236,7 +229,7 @@ fun NotificationDetails(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(topEnd = 5.dp, topStart = 5.dp))
-                        .background(appThemePrimary)
+                        .background(appThemePrimary80)
                         .padding(6.dp),
 
                     ) {
@@ -313,14 +306,11 @@ fun NotificationDetails(
                             .fillMaxWidth()
                             .padding(start = 5.dp),
 
-
                         ) {
-
                         Text(
                             text = discoverList[position].description.toString(),
                             style = TextStyle(
                                 fontSize = 12.sp,
-
                                 color = Color.Black,
                             ),
                             maxLines = 2,

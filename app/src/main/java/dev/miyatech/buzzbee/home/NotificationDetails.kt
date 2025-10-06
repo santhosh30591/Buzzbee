@@ -23,6 +23,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -47,7 +48,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImage
@@ -57,7 +58,7 @@ import dev.miyatech.buzzbee.model.NotificationResult
 import dev.miyatech.buzzbee.netwoork.NetworkResult
 import dev.miyatech.buzzbee.ui.alerts.ShowToast
 import dev.miyatech.buzzbee.ui.alerts.shimmerLoadingAnimation
-import dev.miyatech.buzzbee.ui.theme.appThemePrimary
+import dev.miyatech.buzzbee.ui.theme.appThemePrimary80
 import dev.miyatech.buzzbee.ui_components.HomeTitleBarBack
 import dev.miyatech.buzzbee.ui_components.dateFormateYMD_HMA
 import dev.miyatech.buzzbee.ui_components.downloadAppLink
@@ -66,7 +67,10 @@ import dev.miyatech.buzzbee.viewmodel.HomeViewModel
 
 @Composable
 fun NotificationDetailsView(
-    navController: NavController = rememberNavController(), context: Context, id: String = "267"
+    navController: NavController = rememberNavController(),
+    context: Context,
+    id: String = "267",
+    viewmodel: HomeViewModel = viewModel()
 ) {
     var isLoading by remember { mutableStateOf(false) }
     var notificationDetails by remember { mutableStateOf(NotificationResult()) }
@@ -74,22 +78,14 @@ fun NotificationDetailsView(
     var showToast by remember { mutableStateOf(false) }
     var errorMsg by remember { mutableStateOf(" ") }
 
-    var viewmodel = HomeViewModel()
     var shouldFetch by remember { mutableStateOf(true) }
 
 
-    LaunchedEffect(shouldFetch) {
-        context as MainActivity
 
-        if (shouldFetch) {
-
-            viewmodel = ViewModelProvider(context as MainActivity).get(HomeViewModel::class.java)
-        }
-
+    LaunchedEffect(null) {
         viewmodel.getNotificatiopnDetails(context, id)
-
         try {
-            viewmodel.notificationDetails.observe(context) { response ->
+            viewmodel.notificationDetails.observe(context as MainActivity) { response ->
 
                 when (response) {
                     is NetworkResult.Loading -> {
@@ -121,6 +117,7 @@ fun NotificationDetailsView(
             errorMsg = " " + e
         }
 
+
     }
 
 
@@ -132,11 +129,10 @@ fun NotificationDetailsView(
             modifier = Modifier.weight(1f)
         ) {
 
-            HomeTitleBarBack(text = "Notification Details", navController)
+            HomeTitleBarBack(text = "Notification Details " + errorMsg, navController)
 
             if (!isLoading) {
                 if (shouldFetch) {
-
                     Box(
                         modifier = Modifier.fillMaxSize(), // Make the Box fill the available space
                         contentAlignment = Alignment.Center // Center its content both horizontally and vertically
@@ -253,7 +249,7 @@ fun NotificationDetailsViews(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(appThemePrimary)
+                    .background(appThemePrimary80)
                     .padding(10.dp),
 
                 ) {
@@ -298,7 +294,7 @@ fun NotificationDetailsViews(
                     style = TextStyle(
                         fontSize = 16.sp,
 
-                        color = appThemePrimary,
+                        color = appThemePrimary80,
 
                         ),
                     fontWeight = FontWeight.Bold,
@@ -328,10 +324,11 @@ fun NotificationDetailsViews(
                         discoverList.scheduledDate.toString() + " " + discoverList.scheduledTime.toString()
                     ) + "\n\n " + discoverList.description + " \n\n Download Buzzbee app now!\n " + downloadAppLink
                 )
-            }, modifier = Modifier
+            },
+            modifier = Modifier
                 .fillMaxWidth()
-                .padding(10.dp)
-
+                .padding(10.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = appThemePrimary80)
         ) { Text("Share") }
 
 

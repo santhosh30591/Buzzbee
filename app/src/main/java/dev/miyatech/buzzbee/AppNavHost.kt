@@ -49,6 +49,9 @@ fun AppNavHost() {
             ViewModelProvider(context as MainActivity).get(ManageByBusinessViewModel::class.java)
     } catch (_: Exception) {
     }
+
+
+
     NavHost(
         navController = navController,
         startDestination = Screen.Splash.route //  Start screen of the app
