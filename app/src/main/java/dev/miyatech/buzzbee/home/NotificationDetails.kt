@@ -77,26 +77,19 @@ fun NotificationDetailsView(
 
     var showToast by remember { mutableStateOf(false) }
     var errorMsg by remember { mutableStateOf(" ") }
-
     var shouldFetch by remember { mutableStateOf(true) }
-
-
 
     LaunchedEffect(null) {
         viewmodel.getNotificatiopnDetails(context, id)
         try {
             viewmodel.notificationDetails.observe(context as MainActivity) { response ->
-
                 when (response) {
                     is NetworkResult.Loading -> {
-
                         isLoading = true
-
                     }
 
                     is NetworkResult.Success -> {
                         isLoading = false
-
                         shouldFetch = false
                         notificationDetails = response.data.results
                     }
@@ -116,8 +109,6 @@ fun NotificationDetailsView(
             println(" loading error ")
             errorMsg = " " + e
         }
-
-
     }
 
 
@@ -185,8 +176,6 @@ fun NotificationDetailsView(
             showToast = false
         })
     }
-
-
 }
 
 
