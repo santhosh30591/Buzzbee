@@ -59,13 +59,13 @@ import dev.miyatech.buzzbee.MainActivity
 import dev.miyatech.buzzbee.R
 import dev.miyatech.buzzbee.model.VideoListModel
 import dev.miyatech.buzzbee.netwoork.NetworkResult
+import dev.miyatech.buzzbee.ui.alerts.ShowToast
+import dev.miyatech.buzzbee.ui.alerts.shimmerLoadingAnimation
 import dev.miyatech.buzzbee.ui.theme.appThemeTintGray
 import dev.miyatech.buzzbee.ui_components.BottomTabLineView
 import dev.miyatech.buzzbee.ui_components.HomeTitleBar
-import dev.miyatech.buzzbee.ui.alerts.ShowToast
 import dev.miyatech.buzzbee.ui_components.bounceClick
 import dev.miyatech.buzzbee.ui_components.shareString
-import dev.miyatech.buzzbee.ui.alerts.shimmerLoadingAnimation
 import dev.miyatech.buzzbee.viewmodel.HomeViewModel
 
 @SuppressLint("MutableCollectionMutableState")
@@ -132,12 +132,9 @@ fun VideoScreen(model: HomeViewModel) {
 
                 ) {
 
-
                 if (showToast) {
                     ShowToast(
-                        outSide = {
-
-                        },
+                        outSide = {},
                         onDismiss = { showToast = false },
                         onDismissCloseIcons = { showToast = false },
                         title = "",

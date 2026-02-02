@@ -120,7 +120,7 @@ fun NotificationDetailsView(
             modifier = Modifier.weight(1f)
         ) {
 
-            HomeTitleBarBack(text = "Notification Details " + errorMsg, navController)
+            HomeTitleBarBack(text = "Notification Details", navController)
 
             if (!isLoading) {
                 if (shouldFetch) {

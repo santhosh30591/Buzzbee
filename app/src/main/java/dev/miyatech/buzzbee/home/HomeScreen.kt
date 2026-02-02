@@ -1,6 +1,7 @@
 package dev.miyatech.buzzbee.home
 
 import android.content.Context
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -15,6 +16,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -40,6 +42,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.ContentScale
@@ -60,13 +63,17 @@ import coil.compose.AsyncImage
 import dev.miyatech.buzzbee.MainActivity
 import dev.miyatech.buzzbee.R
 import dev.miyatech.buzzbee.Screen
+import dev.miyatech.buzzbee.model.DashboardLiveResult
 import dev.miyatech.buzzbee.model.DashboardSlides
 import dev.miyatech.buzzbee.navDrawerSideMenu
 import dev.miyatech.buzzbee.netwoork.NetworkResult
 import dev.miyatech.buzzbee.ui.alerts.ShowLoading
 import dev.miyatech.buzzbee.ui.alerts.ShowToast
+import dev.miyatech.buzzbee.ui.theme.appThemeAccident
 import dev.miyatech.buzzbee.ui.theme.appThemeCardTint
 import dev.miyatech.buzzbee.ui.theme.appThemePrimary
+import dev.miyatech.buzzbee.ui.theme.appThemePrimary80
+import dev.miyatech.buzzbee.ui.theme.appThemeTintGray
 import dev.miyatech.buzzbee.ui_components.BottomTabLineView
 import dev.miyatech.buzzbee.ui_components.DBHelper
 import dev.miyatech.buzzbee.ui_components.HomeTitleBar
@@ -91,13 +98,16 @@ fun HomeScreen(
 
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val coroutineScope = rememberCoroutineScope()
+
     val context = LocalContext.current
 
     var showSuccessAlerts by remember { mutableStateOf(false) }
 
+
     var notificationCount by remember { mutableStateOf("") }
 
     var discoverList by remember { mutableStateOf(ArrayList<DashboardSlides>()) }
+
 
 
     var isLoading by remember { mutableStateOf(false) }
@@ -108,13 +118,8 @@ fun HomeScreen(
     LaunchedEffect(key1 = null) {
         context as MainActivity
 
-        viewModel.home(context, DBHelper(context).loginGetDetails().id.toString())
 
-        viewModel.notificationCount.observe(context, {
 
-            notificationCount = it
-
-        })
 
         try {
             viewModel.dashboard.observe(context) { response ->
@@ -156,8 +161,14 @@ fun HomeScreen(
             errorMsg = " " + e
         }
 
-
-
+        try {
+            viewModel.dashboardLive.observe(context) { response ->
+                notificationCount = response.notification_count.toString()
+            }
+        } catch (e: Exception) {
+            println(" loading error ")
+            errorMsg = " " + e
+        }
     }
 
     ModalNavigationDrawer(drawerState = drawerState, drawerContent = {
@@ -235,32 +246,12 @@ fun HomeScreen(
 
                         } else {
                             showSuccessAlerts = true
+                            showToast = true
+
                         }
                     })   // navigation-drawer-item
                 }
-                if (showSuccessAlerts) {
-                    ShowToast(
-                        onDismissCloseIcons = {
-                            showSuccessAlerts = false
-                        },
-                        onDismiss = {
-                            showSuccessAlerts = false
-                            DBHelper(context as MainActivity).saveLogin(
-                                logins = ""
-                            )
 
-                            mainNavControllers.navigate(Screen.Splash.route) {
-                                popUpTo(Screen.HomeMain.route) {
-                                    inclusive =
-                                        true // This removes the splash screen from the back stack
-                                }
-                            }
-                        },
-                        outSide = {},
-                        title = "Logout",
-                        subTitle = "Are you sure you want to log out?"
-                    )
-                }
             }   // column
         }   // model-drawer-sheet
     }) {
@@ -281,11 +272,29 @@ fun HomeScreen(
 
 
             Box(Modifier.padding(it)) {
-                Home1(title, pos, context, discoverList, ads_banner)
+                Home1(title, pos, context, discoverList, ads_banner, viewModel)
 
             }
         }
 
+        if (showSuccessAlerts) {
+            ShowToast(
+                onDismissCloseIcons = {
+                    showSuccessAlerts = false
+                }, onDismiss = {
+                    showSuccessAlerts = false
+                    DBHelper(context as MainActivity).saveLogin(
+                        logins = ""
+                    )
+
+                    mainNavControllers.navigate(Screen.Splash.route) {
+                        popUpTo(Screen.HomeMain.route) {
+                            inclusive = true // This removes the splash screen from the back stack
+                        }
+                    }
+                }, outSide = {}, title = "Logout", subTitle = "Are you sure you want to log out?"
+            )
+        }
         ShowLoading(isLoading = isLoading) {
 
         }
@@ -310,15 +319,11 @@ fun Home1(
     pos: Int,
     context: Context,
     sliderList: ArrayList<DashboardSlides>,
-    ads_banner: String,
+    ads_banner: String, viewModel: HomeViewModel = HomeViewModel()
+
 ) {
 
-
-
 //
-
-
-
 //
     var late by remember { mutableStateOf(0.0) }
 
@@ -375,6 +380,16 @@ fun Home1(
 //        }
 //    }
 
+    var liveDataResule by remember { mutableStateOf(DashboardLiveResult()) }
+
+    LaunchedEffect(key1 = null) {
+
+        viewModel.dashboardLive.observe(context as MainActivity, {
+            liveDataResule = it
+        })
+
+    }
+
 
     Surface {
         Column(
@@ -397,6 +412,7 @@ fun Home1(
 //                .verticalScroll(rememberScrollState()),
 
                 ) {
+
 
 
                     Box(
@@ -433,6 +449,7 @@ fun Home1(
                                 },
                         ) {
 
+                            BasicPieChart(liveDataResule)
 
                             if (sliderList.size != 0) {
                                 loadingSlideShow(sliderList)
@@ -445,10 +462,14 @@ fun Home1(
 //                            .background(appThemeAccident50)
                                     Alignment.TopStart,
                                 ) {
-                                    Text(text = "  Category ", fontSize = 15.sp)
+                                    Text(
+                                        text = "Category",
+                                        fontSize = 15.sp
+                                    )
                                 }
-                                loadingHome1(sliderList, context, rememberNavController())
 
+                                loadingHome1(sliderList, context, rememberNavController())
+//                                PieChartWithLabels()
 //                                Box(
 //                                    Modifier
 //                                        .fillMaxWidth()
@@ -609,6 +630,102 @@ fun loadingHome1(
     }
 }
 
+
+@Composable
+fun BasicPieChart(result: DashboardLiveResult) {
+
+    var tot = result.max_val + result.min_val
+
+    println("total $tot ")
+
+    var a1: Float = 0f
+    var b1: Float = 0f
+
+
+    try {
+        var a = ((result.max_val.toDouble() * 100) / tot) / 100
+        var b = ((result.min_val.toDouble() * 100) / tot) / 100
+
+        a1 = a.toFloat()
+        b1 = b.toFloat()
+
+    } catch (e: Exception) {
+        println("error $e ")
+    }
+
+
+    val entries = listOf(
+        PieChartEntry(appThemePrimary, a1),
+//        PieChartEntry(Color.Green, 0.3f),
+        PieChartEntry(appThemeAccident, b1)
+    )
+    Row(
+        modifier = Modifier
+            .padding(15.dp)
+            .fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        PieChart(entries)
+        Column(
+            modifier = Modifier
+                .padding(10.dp)
+
+                .fillMaxWidth(),
+            verticalArrangement = Arrangement.spacedBy(15.dp),
+
+            ) {
+            Text("Total Post " + result.max_val, color = appThemePrimary, fontSize = 16.sp)
+            Text("Live Post " + result.min_val, color = appThemeAccident, fontSize = 16.sp)
+            Text("Date " + result.date_time, color = appThemeTintGray, fontSize = 12.sp)
+
+
+        }
+    }
+    Text(
+        "News " + result.news, color = Color.White,
+        modifier = Modifier
+            .background(appThemePrimary80)
+            .padding(15.dp)
+            .fillMaxWidth(),
+    )
+}
+
+data class PieChartEntry(val color: Color, val percentage: Float)
+
+fun calculateStartAngles(entries: List<PieChartEntry>): List<Float> {
+    var totalPercentage = 0f
+    return entries.map { entry ->
+        val startAngle = totalPercentage * 360
+        totalPercentage += entry.percentage
+        startAngle
+    }
+}
+
+@Composable
+fun PieChart(entries: List<PieChartEntry>) {
+
+
+    Canvas(
+        modifier = Modifier
+            .size(150.dp)
+            .fillMaxWidth()
+    ) {
+
+        val startAngles = calculateStartAngles(entries)
+        entries.forEachIndexed { index, entry ->
+            drawArc(
+
+                color = entry.color,
+                startAngle = startAngles[index],
+                sweepAngle = entry.percentage * 360f,
+                useCenter = true,
+                topLeft = Offset.Zero,
+                size = this.size
+            )
+        }
+
+    }
+}
 
 @Preview(showBackground = true, showSystemUi = true)
 @Composable

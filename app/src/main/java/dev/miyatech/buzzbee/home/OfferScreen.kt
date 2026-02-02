@@ -38,16 +38,22 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import dev.miyatech.buzzbee.ui.alerts.shimmerLoadingAnimation
 import dev.miyatech.buzzbee.ui_components.BottomTabLineView
 import dev.miyatech.buzzbee.ui_components.HomeTitleBar
-import dev.miyatech.buzzbee.ui.alerts.shimmerLoadingAnimation
 import kotlinx.coroutines.delay
 
 @SuppressLint("MutableCollectionMutableState")
 @Composable
 fun OfferScreen(navController: NavController) {
-
     var isLoading by remember { mutableStateOf(true) }
+
+
+    var modifer1 by remember { mutableStateOf(Modifier.shimmerLoadingAnimation(isLoading)) }
+
+
+
+
     Column(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Bottom,
@@ -55,7 +61,6 @@ fun OfferScreen(navController: NavController) {
         Column(
             modifier = Modifier.weight(1f)
         ) {
-
             HomeTitleBar(text = "Offers ")
             if (!isLoading) {
 
@@ -184,7 +189,6 @@ fun OfferScreen(navController: NavController) {
             delay(5000)
             isLoading = !isLoading
         }
-
     }
 
 }

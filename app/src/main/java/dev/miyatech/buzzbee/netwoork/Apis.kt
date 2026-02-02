@@ -12,6 +12,7 @@ object Api {
     const val cityList: String = "citylist";
     const val register: String = "register";
     const val dashboard: String = "dashboard";
+        const val dashboardLive: String = "dashboardlivedata";
     const val notifications: String = "notifications";
     const val notificationview: String = "notificationview";
     const val categorylist: String = "categorylist";

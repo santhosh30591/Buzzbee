@@ -44,7 +44,6 @@ fun HomeTitleBar(
         Text(
             text = text,
             color = Color.White,
-
             modifier = Modifier.padding(all = 17.dp),
             fontWeight = FontWeight.SemiBold,
             style = MaterialTheme.typography.titleLarge
@@ -79,13 +78,14 @@ fun HomeTitleBarBack(
 //                            if (isClosed) open() else close()
 //                        }
 //                    }
+
+
                 },
         )
 
         Text(
             text = text,
             color = Color.White,
-
             modifier = Modifier.padding(all = 17.dp),
             fontWeight = FontWeight.SemiBold,
             style = MaterialTheme.typography.titleLarge
@@ -109,7 +109,6 @@ fun BottomTabLineView(
 
 ) {
 
-
     var paddings = 10
 
     Row(
@@ -121,7 +120,6 @@ fun BottomTabLineView(
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
 
-
         if (posi == 1) {
             Box(
                 modifier = Modifier
@@ -132,12 +130,10 @@ fun BottomTabLineView(
                     .clip(RoundedCornerShape(bottomEnd = 20.dp, bottomStart = 20.dp))
                     .background(appThemeAccident)
             ) {
-
             }
 
-
             Box(
-                modifier = Modifier
+                    modifier = Modifier
                     .fillMaxWidth()
                     .fillMaxHeight()
                     .weight(1f)

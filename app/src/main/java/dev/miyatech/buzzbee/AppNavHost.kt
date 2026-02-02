@@ -1,11 +1,26 @@
 package dev.miyatech.buzzbee
 
+import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.MutableTransitionState
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -34,8 +49,54 @@ import dev.miyatech.buzzbee.login.RegisterScreen
 import dev.miyatech.buzzbee.login.SplashScree
 import dev.miyatech.buzzbee.login.Temp
 import dev.miyatech.buzzbee.ui.ZoomImage
+import dev.miyatech.buzzbee.ui_components.DBHelper
 import dev.miyatech.buzzbee.viewmodel.HomeViewModel
 import dev.miyatech.buzzbee.viewmodel.ManageByBusinessViewModel
+
+
+@Composable
+fun EnterAnimation(content: @Composable () -> Unit) {
+    AnimatedVisibility(
+        visibleState = MutableTransitionState(
+            initialState = false
+        ).apply { targetState = true },
+        modifier = Modifier,
+        enter = slideInVertically(
+            initialOffsetY = { -40 }
+        ) + expandVertically(
+            expandFrom = Alignment.Bottom
+        ) + fadeIn(initialAlpha = 0.3f),
+        exit = slideOutVertically() + shrinkVertically() + fadeOut(),
+    ) {
+        content()
+    }
+}
+
+private val enterPush: AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition = {
+    fadeIn(
+        animationSpec = tween(
+            200, easing = LinearEasing
+        )
+    ) + slideIntoContainer(
+        animationSpec = tween(200, easing = LinearEasing),
+        towards = AnimatedContentTransitionScope.SlideDirection.Start,
+        initialOffset = { it }
+    )
+}
+private val exitPop: AnimatedContentTransitionScope<NavBackStackEntry>.() -> ExitTransition = {
+    fadeOut(
+        animationSpec = tween(
+            800, easing = LinearEasing
+        )
+    ) + slideOutOfContainer(
+        animationSpec = tween(800, easing = LinearEasing),
+        towards = AnimatedContentTransitionScope.SlideDirection.End,
+        targetOffset = { it }
+    )
+}
+
+
+
 
 @Composable
 fun AppNavHost() {
@@ -52,12 +113,18 @@ fun AppNavHost() {
 
 
 
+
+
+
     NavHost(
         navController = navController,
-        startDestination = Screen.Splash.route //  Start screen of the app
+        startDestination = Screen.HomeMain.route, enterTransition = { EnterTransition.None },
+        exitTransition = { ExitTransition.None }
+        //  Start screen of the app
 //        startDestination = Screen.BusinessDetails.route //  Start screen of the app
     ) {
-        composable(Screen.Splash.route) { //  Define the Home screen
+        composable(Screen.Splash.route) {
+            //  Define the Home screen
             SplashScree(navController)
         }
         composable(Screen.Login.route) { //  Define the Home screen
@@ -70,19 +137,41 @@ fun AppNavHost() {
             HomeMainScreen(navController)
         }
 
-        composable(Screen.Profile.route) { //  Define the Profile screen
+        composable(Screen.Profile.route) {
+
+
+            //  Define the Profile screen
             ProfileScreen(navController)
         }
 
-        composable(Screen.Notification.route) { //  Define the Profile screen
+        composable(
+            Screen.Notification.route,
+            enterTransition = {
+                enterPush()
+            },
+            exitTransition = {
+                exitPop()
+            }
+        ) {
             NotificationScreen(navController, context)
 
         }
-        composable(Screen.NotificationsDetails.route + "/{id}") { navBackStack ->//  Define the Profile screen
+
+        composable(
+            Screen.NotificationsDetails.route + "/{id}",
+            enterTransition = {
+                enterPush()
+            },
+            exitTransition = {
+                exitPop()
+            }
+        ) { navBackStack ->//  Define the Profile screen
+
             var id = navBackStack.arguments?.getString("id").toString()
             NotificationDetailsView(navController, context, id)
 
         }
+
 
         composable(Screen.Location1.route) { //  Define the Settings screen
             LocationPermission(navController)
@@ -161,6 +250,8 @@ fun HomeBottomViews(
     try {
         var act = context as MainActivity
         viewmodel = ViewModelProvider(act).get(HomeViewModel::class.java)
+        viewmodel.home(context, DBHelper(context).loginGetDetails().id.toString())
+        viewmodel.homeLiveData(context, DBHelper(context).loginGetDetails().id.toString())
 
     } catch (_: Exception) {
     }

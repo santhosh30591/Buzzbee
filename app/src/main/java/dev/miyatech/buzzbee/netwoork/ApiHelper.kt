@@ -25,6 +25,7 @@ class ApiHelper(private val apiService: ApiInterface) {
     suspend fun getVideos() = apiService.getVideos()
     suspend fun discover() = apiService.getDiscover()
     suspend fun dashboard(id: String) = apiService.getDashboard(id)
+    suspend fun dashboardLive(id: String) = apiService.getDashboardLive(id)
     suspend fun notificationList(userid: String) = apiService.getNotificationList(userid)
     suspend fun notificationDetails(id: String) = apiService.getNotificationDetails(id)
     suspend fun subCategory(id: String) = apiService.getCategory(id)

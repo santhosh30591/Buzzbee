@@ -8,6 +8,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dev.miyatech.buzzbee.model.BusinessDetailsModel
 import dev.miyatech.buzzbee.model.BusinessListModel
+import dev.miyatech.buzzbee.model.DashboardLiveResult
 import dev.miyatech.buzzbee.model.DashboardModel
 import dev.miyatech.buzzbee.model.DiscoverResult
 import dev.miyatech.buzzbee.model.NotificationDetails
@@ -20,8 +21,6 @@ import dev.miyatech.buzzbee.netwoork.ApiHelper
 import dev.miyatech.buzzbee.netwoork.NetworkResult
 import dev.miyatech.buzzbee.netwoork.RetrofitClient
 import dev.miyatech.buzzbee.netwoork.isInternetAvailable
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
 
@@ -29,6 +28,10 @@ class HomeViewModel() : ViewModel() {
 
     val _discount: MutableLiveData<NetworkResult<ArrayList<DiscoverResult>>> = MutableLiveData()
     val dashboard: LiveData<NetworkResult<DashboardModel>> = MutableLiveData()
+
+
+    val dashboardLive: LiveData<DashboardLiveResult> = MutableLiveData()
+
     val notificationList: MutableLiveData<NetworkResult<NotificationListModel>> = MutableLiveData()
 //    private val notificationDetails = MutableStateFlow<NetworkResult<NotificationDetails>?>(null)
     val notificationDetails: LiveData<NetworkResult<NotificationDetails>> = MutableLiveData()//    val notificationDetails1: StateFlow<NetworkResult<NotificationDetails>> =notificationDetails
@@ -73,52 +76,26 @@ class HomeViewModel() : ViewModel() {
     }
 
 
-//    val _uiState = MutableStateFlow<UiState>(UiState.Loading)
-//    val uiState: StateFlow<UiState> = _uiState
-//    var countw = 0;
-//
-//    fun updateTemp() {
-//        viewModelScope.launch {
-//            countw = countw + 1
-//            _uiState.value = UiState.Loading
-//            try {
-//                val response = apiHelper.notificationList("5")
-//                _uiState.value = UiState.Success(response.message)
-//                delay(2000L)
-////                _uiState.value = UiState.Success("success " + countw)
-//            } catch (e: Exception) {
-//                _uiState.value = UiState.Error(e.message ?: "Unknown error")
-//            }
-//
-//
-//        }
-//    }
+    fun homeLiveData(context: Context, id: String) {
+        dashboardLive as MutableLiveData<DashboardLiveResult>
+        viewModelScope.launch {
+
+            if (isInternetAvailable(context)) {
+                try {
+
+//                    while (true) {
+                        val response = apiHelper.dashboardLive(id)
+                        notificationCount.value = response.results.notification_count
+                        dashboardLive.value = response.results
+//                        delay(4000)
+//                    }
 
 
-    private val _uiState = MutableStateFlow(NetworkResult.Init("test"))
-    val uiState: StateFlow<NetworkResult.Init> = _uiState
-
-
-
-
-//    fun getNotificatiopnList(context: Context, userid: String) {
-//        viewModelScope.launch {
-//            _uiState.value = NetworkResult.Init("")
-//            _uiState.value = NetworkResult.S("")
-//            try {
-//                val response = apiHelper.notificationList(userid)
-//                _uiState.value = UiState.Success(response.message)
-//            } catch (e: Exception) {
-//                _uiState.value = UiState.Error(e.message ?: "Unknown error")
-//            }
-//        }
-//    }
-
-
-    sealed class UiState {
-        object Loading : UiState()
-        data class Success(val data: String) : UiState()
-        data class Error(val message: String) : UiState()
+                } catch (e: Exception) {
+                    dashboardLive.value = DashboardLiveResult()
+                }
+            }
+        }
     }
 
     fun getNotificatiopnList1(context: Context, userid: String) {

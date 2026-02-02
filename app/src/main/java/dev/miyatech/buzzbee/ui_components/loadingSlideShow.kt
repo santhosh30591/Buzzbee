@@ -52,7 +52,8 @@ fun loadingSlideShow(sliderList: ArrayList<DashboardSlides>) {
     var pageKey by remember { mutableStateOf(0) }
     var nextPage by remember { mutableStateOf(0) }
 
-    val pagerState = rememberPagerState(sliderList.size)
+
+    val pagerState = rememberPagerState(initialPage = 0, pageCount = { sliderList.size })
 
 
     val itemSize = 50.dp
@@ -92,12 +93,8 @@ fun loadingSlideShow(sliderList: ArrayList<DashboardSlides>) {
 
             .height(250.dp)
     ) {
-        HorizontalPager(
-            pageCount = sliderList.size,
-            state = pagerState,
-//            contentPadding = PaddingValues(horizontal = 10.dp),
-//            pageSpacing = 10.dp
-        ) { currentPage ->
+
+        HorizontalPager(state = pagerState) { currentPage ->
 
             Column() {
             Box(

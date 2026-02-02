@@ -3,6 +3,7 @@ package dev.miyatech.buzzbee.netwoork
 import dev.miyatech.buzzbee.model.BusinessDetailsModel
 import dev.miyatech.buzzbee.model.BusinessListModel
 import dev.miyatech.buzzbee.model.CommonResponse
+import dev.miyatech.buzzbee.model.DashboardLiveModel
 import dev.miyatech.buzzbee.model.DashboardModel
 import dev.miyatech.buzzbee.model.DiscoverModel
 import dev.miyatech.buzzbee.model.LoginResponseModel
@@ -76,6 +77,8 @@ interface ApiInterface {
 
     @GET(Api.dashboard)
     suspend fun getDashboard(@Query("userid")  id: String ): DashboardModel
+    @GET(Api.dashboardLive)
+    suspend fun getDashboardLive(@Query("userid")  id: String ): DashboardLiveModel
     @GET(Api.notifications)
     suspend fun getNotificationList(@Query("userid")  id: String ): NotificationListModel
 

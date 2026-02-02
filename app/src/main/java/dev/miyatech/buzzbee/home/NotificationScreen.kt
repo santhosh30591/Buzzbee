@@ -78,6 +78,7 @@ fun NotificationScreen(
     var errorMsg by remember { mutableStateOf(" ") }
 
 
+
     LaunchedEffect(notificationList) {
         context as MainActivity
         viewmodel.getNotificatiopnList1(context, DBHelper(context).loginGetDetails().id.toString())
@@ -217,8 +218,12 @@ fun NotificationDetails(
                         navController.navigate(
                             Screen.NotificationsDetails.route + "/" + discoverList.get(
                                 position
-                            ).id
-                        )
+                            ).id,
+                        ){
+//                            popUpTo(navController.graph.id){
+//                                inclusive =true
+//                            }
+                        }
                     }
                     .border(width = 1.dp, color = appThemePrimary80, shape = RoundedCornerShape(5)),
             ) {
@@ -386,12 +391,8 @@ fun LoadingView(isLoading: Boolean) {
                         )
                     }
 
-
                 }
-
             }
-
-
         }
     }
 }
